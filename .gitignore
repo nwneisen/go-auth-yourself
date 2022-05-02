@@ -1,0 +1,8 @@
+go-proxy-yourself
+
+!cmd/go-proxy-yourself
+
+configs/okta.cert
+configs/dev.yaml
+server.cert
+server.key

@@ -1,0 +1,14 @@
+httpPort: "80"
+httpsPort: "443"
+
+routes:
+  test.nneisen.local:
+    egressHostname: ""
+    port: ""
+
+    idpSsoUrl: ""
+    idpIssuer: ""
+    idpCertPath: ""
+
+    googleClientId: ""
+    googleClientSecret: ""
