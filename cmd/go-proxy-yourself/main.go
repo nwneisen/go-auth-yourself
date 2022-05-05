@@ -3,8 +3,10 @@ package main
 import (
 	"net/http"
 	"nwneisen/go-proxy-yourself/internal/handlers"
+	"nwneisen/go-proxy-yourself/internal/handlers/callbacks"
 	oauth "nwneisen/go-proxy-yourself/internal/handlers/oAuth"
 	"nwneisen/go-proxy-yourself/internal/handlers/saml"
+
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
 	"nwneisen/go-proxy-yourself/pkg/tracer"
@@ -13,7 +15,7 @@ import (
 func main() {
 	// Read the configs
 	config := config.NewConfig()
-	config.LoadConfig("configs/default.yaml")
+	config.LoadConfig("configs/dev.yaml")
 
 	// Setup the logger
 	logger := logger.NewLogger()
@@ -23,12 +25,14 @@ func main() {
 	handlers := handlers.NewHandlers(config, logger)
 	oAuth := oauth.NewOAuth(config, logger)
 	saml := saml.NewSaml(config, logger)
+	callbacks := callbacks.NewCallbacks(config, logger)
 
 	// Add https handlers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.Index)
 	mux.HandleFunc("/saml", saml.Index)
 	mux.Handle("/oauth", oAuth)
+	mux.Handle("/callback", callbacks)
 
 	wrappedMux := addMiddleware(mux, logger)
 

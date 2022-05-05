@@ -10,6 +10,7 @@ services:
       - ./:/app
   simple-app:
     container_name: simple-app
+    hostname: simple-app
     image: httpd
     ports:
       - '8080:80'

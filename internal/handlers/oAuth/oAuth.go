@@ -31,7 +31,7 @@ func (h *OAuth) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	host := req.Host
 	route, ok := h.config.Routes[host]
 	if !ok {
-		h.logger.Error("Route not found in config")
+		h.logger.Error("Route not found in config: %s", host)
 		return
 	}
 

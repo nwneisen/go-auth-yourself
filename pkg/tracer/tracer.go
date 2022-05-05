@@ -1,7 +1,6 @@
 package tracer
 
 import (
-	"log"
 	"net/http"
 	"nwneisen/go-proxy-yourself/pkg/logger"
 )
@@ -16,10 +15,10 @@ type Tracer struct {
 
 // ServeHTTP handles the request by passing it to the real handler
 func (t *Tracer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Start tracing span")
+	// log.Printf("Start tracing span")
 	// t.dump(r)
 	t.handler.ServeHTTP(w, r)
-	log.Printf("Finish tracing span")
+	// log.Printf("Finish tracing span")
 }
 
 // NewTracer constructs a new Tracer middleware handler

@@ -23,21 +23,24 @@ func NewHandlers(config *config.Config, logger *logger.Logger) *Handlers {
 
 // Index old handler that is no longer really used
 func (h *Handlers) Index(w http.ResponseWriter, req *http.Request) {
-	host := req.Host
+	io.WriteString(w, "<a href=/oauth>oauth</a><br>")
+	io.WriteString(w, "<a href=/saml>saml</a><br>")
 
-	if _, ok := h.config.Routes[host]; ok {
-		// message := fmt.Sprintf("Routing from %s to %s", host, route.EgressHostname)
-		// log.Println(w, message)
+	// host := req.Host
 
-		// h.idpAuthFlow(w, req, route)
-		h.logger.Info("Main handler called")
+	// if _, ok := h.config.Routes[host]; ok {
+	// 	// message := fmt.Sprintf("Routing from %s to %s", host, route.EgressHostname)
+	// 	// log.Println(w, message)
 
-		// if req.Referer() != "https://test.nneisen.local/" {
-		// 	h.googleOAuthFlow(w, req, route)
-		// }
-	}
+	// 	// h.idpAuthFlow(w, req, route)
+	// 	h.logger.Info("Main handler called")
 
-	h.dumpReq(w, req)
+	// 	// if req.Referer() != "https://test.nneisen.local/" {
+	// 	// 	h.googleOAuthFlow(w, req, route)
+	// 	// }
+	// }
+
+	// h.dumpReq(w, req)
 }
 
 // dumpReq is for debugging and sends all of the request data to the browser
