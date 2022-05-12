@@ -50,7 +50,7 @@ func (c *Callbacks) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	q.Add("code", authCode[0])
 	q.Add("client_id", route.GoogleClientId)
 	q.Add("client_secret", route.GoogleClientSecret)
-	q.Add("redirect_uri", host+"/tokens")
+	q.Add("redirect_uri", "https://"+host+"/token")
 	q.Add("grant_type", "authorization_code")
 	req.URL.RawQuery = q.Encode()
 

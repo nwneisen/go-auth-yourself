@@ -22,4 +22,9 @@ func NewTokens(config *config.Config, logger *logger.Logger) *Tokens {
 func (c *Tokens) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	c.logger.Info("Tokens handler called")
 	io.WriteString(w, "Tokens received\n")
+
+	c.logger.Info("Query values:\n")
+	for key, value := range req.URL.Query() {
+		c.logger.Info("%s: %s\n", key, value)
+	}
 }
