@@ -19,9 +19,13 @@ type Config struct {
 type Route struct {
 	EgressHostname string `yaml:"egressHostname"`
 	Port           string `yaml:"port"`
-	IdpSsoUrl      string `yaml:"idpSsoUrl"`
-	IdpIssuer      string `yaml:"idpIssuer"`
-	IdpCertPath    string `yaml:"idpCertPath"`
+
+	IdpSsoUrl   string `yaml:"idpSsoUrl"`
+	IdpIssuer   string `yaml:"idpIssuer"`
+	IdpCertPath string `yaml:"idpCertPath"`
+
+	GoogleClientId     string `yaml:"googleClientId"`
+	GoogleClientSecret string `yaml:"googleClientSecret"`
 }
 
 // NewConfig creates a new config structure

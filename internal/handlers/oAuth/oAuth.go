@@ -29,29 +29,13 @@ func (h *OAuth) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// Check for a valid host in the config
 	host := req.Host
-	route, ok := h.config.Routes[host]
+	_, ok := h.config.Routes[host]
 	if !ok {
 		h.logger.Error("Route not found in config: %s", host)
 		return
 	}
 
-	h.logger.Info("Routing from %s to %s", host, route.EgressHostname)
-
-	// TODO Check the query values
-	h.logger.Info("Query values:")
-	for key, value := range req.URL.Query() {
-		h.logger.Info("%q:%q", key, value[0])
-	}
-
+	// Start the authentication process
 	provider := oauth.NewGoogleProvider()
 	provider.Begin(w)
-
-	// if req.Referer() != "https://test.nneisen.local/" {
-	// 	h.googleOAuthFlow(w, req, route)
-	// }
-
-	// values := req.URL.Query()
-	// if authCode, ok := values["code"]; ok {
-	// 	h.googleAuthToken(w, authCode[0])
-	// }
 }

@@ -2,7 +2,7 @@ httpPort: "80"
 httpsPort: "443"
 
 routes:
-  test.nneisen.local:
+  test.nneisen.com:
     egressHostname: ""
     port: ""
 
