@@ -1,10 +1,7 @@
 package main
 
 import (
-	"nwneisen/go-proxy-yourself/internal/handlers/callbacks"
-	"nwneisen/go-proxy-yourself/internal/handlers/index"
-	"nwneisen/go-proxy-yourself/internal/handlers/oauth"
-	"nwneisen/go-proxy-yourself/internal/handlers/saml"
+	"nwneisen/go-proxy-yourself/internal/handlers"
 	"nwneisen/go-proxy-yourself/pkg/server"
 )
 
@@ -17,9 +14,11 @@ func main() {
 // run starts the server
 func run() {
 	server := server.NewServer()
-	server.AddHandler("/", index.NewIndex)
-	server.AddHandler("/oauth", oauth.NewOAuth)
-	server.AddHandler("/saml", saml.NewSaml)
-	server.AddHandler("/callback", callbacks.NewCallbacks)
+
+	server.AddHandler("/", handlers.NewIndexHandler)
+	server.AddHandler("/oauth", handlers.NewOAuthHandler)
+	server.AddHandler("/saml", handlers.NewSamlHandler)
+	server.AddHandler("/callback", handlers.NewCallbacksHandler)
+
 	server.Start()
 }

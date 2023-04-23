@@ -1,11 +1,28 @@
 <!DOCTYPE html>
 <html>
 	<body>
-		<!-- {{ index . "test.nneisen.local" }} -->
-		{{ range $key, $value := . }}
-		<li><strong>{{ $key }}</strong>: {{ $value }}</li>
+		{{ if . }}
+			{{ range $key, $value := . }}
+				<h1>{{ $key }}</h1>
+				{{ if $value.SAML }}
+					<h2>SAML</h2>
+					{{ range $key, $value := .SAML }}
+						<li> <strong><a href=http://{{ $value.URL }}>{{ $key }}</a></strong></li>
+					{{end}}
+				{{end}}
+
+				{{ if $value.OAuth }}
+				<h2>OAuth</h2>
+					{{ range $key, $value := .OAuth }}
+						<li> 	<strong><a href=http://{{ $value.URL }}>{{ $key }}</a></strong></li>
+					{{end}}
+				{{end}}
+			{{end}}
 		{{end}}
-		<!-- {{ if . }} T0 {{end}} -->
+
+		<br>
+		<br>
+
 		<a href=/oauth>oauth</a><br>
 		<a href=/saml>saml</a><br>
 	</body>

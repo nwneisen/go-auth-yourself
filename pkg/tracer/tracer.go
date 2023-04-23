@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"net/http"
+
 	"nwneisen/go-proxy-yourself/pkg/logger"
 )
 

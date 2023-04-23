@@ -1,11 +1,11 @@
-package oauth
+package handlers
 
 import (
-	oauth "nwneisen/go-proxy-yourself/internal/handlers/oauth/providers"
+	"nwneisen/go-proxy-yourself/internal/oauth"
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
+	"nwneisen/go-proxy-yourself/pkg/responses"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
-	"nwneisen/go-proxy-yourself/pkg/server/responses"
 )
 
 // Provider interface used by all OAuth providers
@@ -15,34 +15,33 @@ type Provider interface {
 }
 
 // OAuth the oauth handler
-type OAuth struct {
+type OAuthHandler struct {
 	*handlers.BaseHandler
 }
 
 // NewOAuth creates a new oauth handler
-func NewOAuth(config *config.Config, logger *logger.Logger) handlers.Handler {
-	return OAuth{
-		BaseHandler: handlers.NewBaseHandler(config, logger),
+func NewOAuthHandler() handlers.Handler {
+	return OAuthHandler{
+		BaseHandler: handlers.NewBaseHandler(),
 	}
 }
 
 // Get handles the GET request
-func (oa OAuth) Get() *responses.Response {
+func (oa OAuthHandler) Get() *responses.Response {
 
 	// Check for a valid host in the config
 	host := oa.Request().Host
-	route, ok := oa.Config().Routes[host]
-	if !ok {
-		oa.Log().Error("Route not found in config: %s", host)
-		return responses.NotFound("Route not found in config")
+	route, err := config.Route(host)
+	if err != nil {
+		return responses.NotFound("%s not found in config: %w", host, err)
 	}
 
-	oa.Log().Info("Routing from %s to %s", host, route.EgressHostname)
+	logger.Info("Routing from %s to %s", host, route.EgressHostname)
 
 	// TODO Check the query values
-	oa.Log().Info("Query values:")
+	logger.Info("Query values:")
 	for key, value := range oa.Request().URL.Query() {
-		oa.Log().Info("%q:%q", key, value[0])
+		logger.Info("%q:%q", key, value[0])
 	}
 
 	provider := oauth.NewGoogleProvider()

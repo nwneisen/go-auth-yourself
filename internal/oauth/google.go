@@ -4,8 +4,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"nwneisen/go-proxy-yourself/pkg/server/responses"
 	"time"
+
+	"nwneisen/go-proxy-yourself/pkg/responses"
 )
 
 // GoogleProvider for a google specific provider

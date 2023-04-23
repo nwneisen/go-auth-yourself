@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"log"
+
 	"go.uber.org/zap"
 )
 
@@ -12,57 +14,73 @@ import (
 // 	Warn(format string, args ...interface{})
 // }
 
-// Logger wrapper for logging libraries
-type Logger struct {
-	logger *zap.SugaredLogger
+var globalLogger *logger
+
+// TODO Add a way to switch between dev vs prod in config
+// InitLogging initializes the global logger
+func InitLogging() error {
+	// Setup the zapper framework
+	zapper, err := zap.NewDevelopment()
+	if err != nil {
+		log.Panicf("Failed to create zapper logger", err)
+	}
+	sugar := zapper.Sugar()
+	defer zapper.Sync() // flushes buffer, if any
+
+	globalLogger = &logger{sugar}
+	Info("logger created")
+	return nil
 }
 
-// NewLogger constructs a new Logger class
-func NewLogger() *Logger {
-	// TODO Add a way to switch between dev vs prod in config
-	logger, _ := zap.NewDevelopment()
-	sugar := logger.Sugar()
-	defer logger.Sync() // flushes buffer, if any
-
-	return &Logger{sugar}
+// logger is a wrapper around the zap logger
+type logger struct {
+	log *zap.SugaredLogger
 }
 
-func (l Logger) Info(format string, args ...interface{}) {
+func Info(format string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logger.Info(format)
+		globalLogger.log.Info(format)
 	} else {
-		l.logger.Infof(format, args...)
+		globalLogger.log.Infof(format, args...)
 	}
 }
 
-func (l Logger) Error(format string, args ...interface{}) {
+func Error(format string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logger.Error(format)
+		globalLogger.log.Error(format)
 	} else {
-		l.logger.Errorf(format, args...)
+		globalLogger.log.Errorf(format, args...)
 	}
 }
 
-func (l Logger) Debug(format string, args ...interface{}) {
+func Debug(format string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logger.Debug(format)
+		globalLogger.log.Debug(format)
 	} else {
-		l.logger.Debugf(format, args...)
+		globalLogger.log.Debugf(format, args...)
 	}
 }
 
-func (l Logger) Panic(format string, args ...interface{}) {
+func Panic(format string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logger.Panic(format)
+		globalLogger.log.Panic(format)
 	} else {
-		l.logger.Panicf(format, args...)
+		globalLogger.log.Panicf(format, args...)
 	}
 }
 
-func (l Logger) Warn(format string, args ...interface{}) {
+func Warn(format string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logger.Warn(format)
+		globalLogger.log.Warn(format)
 	} else {
-		l.logger.Warnf(format, args...)
+		globalLogger.log.Warnf(format, args...)
+	}
+}
+
+func Fatal(format string, args ...interface{}) {
+	if len(args) == 0 {
+		globalLogger.log.Fatal(format)
+	} else {
+		globalLogger.log.Fatalf(format, args...)
 	}
 }

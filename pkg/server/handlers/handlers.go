@@ -3,23 +3,19 @@ package handlers
 import (
 	"io"
 	"net/http"
-	"nwneisen/go-proxy-yourself/pkg/config"
+
 	"nwneisen/go-proxy-yourself/pkg/logger"
-	"nwneisen/go-proxy-yourself/pkg/server/responses"
+	"nwneisen/go-proxy-yourself/pkg/responses"
 )
 
 // HandlerWrapper wraps a Handler to create high level calling methods
 type HandlerWrapper struct {
-	config *config.Config
-	logger *logger.Logger
 	Handler
 }
 
 // NewHandlerWrapper creates a new HandlerWrapper
-func NewHandlerWrapper(config *config.Config, logger *logger.Logger, handle Handler) *HandlerWrapper {
+func NewHandlerWrapper(handle Handler) *HandlerWrapper {
 	return &HandlerWrapper{
-		config:  config,
-		logger:  logger,
 		Handler: handle,
 	}
 }
@@ -40,7 +36,7 @@ func (h *HandlerWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		response = h.Delete()
 	} else {
 		msg := "unknown method"
-		h.Log().Info(msg)
+		logger.Info(msg)
 		response = responses.BadRequest(msg)
 	}
 
@@ -55,64 +51,46 @@ type Handler interface {
 	Post() *responses.Response
 	Put() *responses.Response
 	Delete() *responses.Response
-	Log() *logger.Logger
-	Config() *config.Config
 	SetRequest(request *http.Request)
 	Request() *http.Request
 }
 
 // BaseHandler is the base struct for all handlers to share methods
 type BaseHandler struct {
-	config *config.Config
-	logger *logger.Logger
-
 	request *http.Request
 }
 
 // NewBaseHandler creates a new BaseHandler
-func NewBaseHandler(config *config.Config, logger *logger.Logger) *BaseHandler {
-	return &BaseHandler{
-		config: config,
-		logger: logger,
-	}
+func NewBaseHandler() *BaseHandler {
+	return &BaseHandler{}
 }
 
 // Get is the default GET method for all handlers
 func (h BaseHandler) Get() *responses.Response {
 	msg := "GET method not implemented"
-	h.logger.Info(msg)
+	logger.Info(msg)
 	return responses.BadRequest(msg)
 }
 
 // Post is the default POST method for all handlers
 func (h BaseHandler) Post() *responses.Response {
 	msg := "POST method not implemented"
-	h.logger.Info(msg)
+	logger.Info(msg)
 	return responses.BadRequest(msg)
 }
 
 // Put is the default PUT method for all handlers
 func (h BaseHandler) Put() *responses.Response {
 	msg := "PUT method not implemented"
-	h.logger.Info(msg)
+	logger.Info(msg)
 	return responses.BadRequest(msg)
 }
 
 // Delete is the default DELETE method for all handlers
 func (h BaseHandler) Delete() *responses.Response {
 	msg := "DELETE method not implemented"
-	h.logger.Info(msg)
+	logger.Info(msg)
 	return responses.BadRequest(msg)
-}
-
-// Log returns the logger for the handlers
-func (h BaseHandler) Log() *logger.Logger {
-	return h.logger
-}
-
-// Config returns the config for the handlers
-func (h BaseHandler) Config() *config.Config {
-	return h.config
 }
 
 // Request returns the request for the handlers

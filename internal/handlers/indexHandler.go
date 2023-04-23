@@ -1,54 +1,67 @@
-package index
+package handlers
 
 import (
 	"bytes"
 	"fmt"
+	"html/template"
+
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
+	"nwneisen/go-proxy-yourself/pkg/responses"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
-	"nwneisen/go-proxy-yourself/pkg/server/responses"
-	"text/template"
 )
 
 // Index handler
-type Index struct {
+type IndexHandler struct {
 	*handlers.BaseHandler
 }
 
-// NewIndex creates a new handler
-func NewIndex(config *config.Config, logger *logger.Logger) handlers.Handler {
-	return Index{
-		BaseHandler: handlers.NewBaseHandler(config, logger),
+// NewIndexHandler creates a new handler
+func NewIndexHandler() handlers.Handler {
+	return IndexHandler{
+		BaseHandler: handlers.NewBaseHandler(),
 	}
 }
 
 // Get returns the index.html page
-func (i Index) Get() *responses.Response {
-	i.Log().Info("Index %s handler called", i.Request().Method)
+func (i IndexHandler) Get() *responses.Response {
+	logger.Info("Index %s handler called", i.Request().Method)
 
 	// page, err := ioutil.ReadFile("web/index.html")
 	// if err != nil {
 	// 	msg := fmt.Sprintf("could not read index html file: %v", err.Error())
-	// 	i.Log().Error(msg)
+	// 	logger.Debug(msg)
 	// 	return responses.InternalServerError(msg)
 	// }
 
 	tmpl, err := template.ParseFiles("web/index.html")
 	if err != nil {
 		msg := fmt.Sprintf("could not read index html file: %v", err.Error())
-		i.Log().Error(msg)
+		logger.Debug(msg)
 		return responses.InternalServerError(msg)
 	}
 
+	routes, err := config.Routes()
+	if err != nil {
+		responses.NotFound(fmt.Sprintf("could not get routes: %v", err.Error()))
+	}
+
 	var doc bytes.Buffer
-	// tmpl.Execute(&doc, i.Config().Routes)
-	t, err := template.New("index").ParseFiles("web/index.html")
-	err = t.Execute(&doc, i.Config().Routes)
+	tmpl.Execute(&doc, routes)
+	// t, err := template.New("index").ParseFiles("web/index.html")
+	// if err != nil {
+	// 	msg := fmt.Sprintf("could not read index html file: %v", err.Error())
+	// 	logger.Debug(msg)
+	// 	return responses.InternalServerError(msg)
+	// }
+	// err = t.Execute(&doc, i.Config().Routes)
+	// if err != nil {
+	// 	msg := fmt.Sprintf("could not execute index template: %v", err.Error())
+	// 	logger.Debug(msg)
+	// 	return responses.InternalServerError(msg)
+	// }
 	page := doc.String()
-
-	routes := fmt.Sprintf("%+v", page)
-
-	return responses.OK(string(routes))
+	return responses.OK(string(page))
 }
 
 // // Index old handler that is no longer really used
@@ -60,10 +73,10 @@ func (i Index) Get() *responses.Response {
 
 // 	// if _, ok := h.config.Routes[host]; ok {
 // 	// 	// message := fmt.Sprintf("Routing from %s to %s", host, route.EgressHostname)
-// 	// 	// log.Println(w, message)
+// 	// 	// logger.Info(w, message)
 
 // 	// 	// h.idpAuthFlow(w, req, route)
-// 	// 	h.logger.Info("Main handler called")
+// 	// 	logger.Info("Main handler called")
 
 // 	// 	// if req.Referer() != "https://test.nneisen.local/" {
 // 	// 	// 	h.googleOAuthFlow(w, req, route)
