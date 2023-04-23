@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<!-- {{ index . "test.nneisen.local" }} -->
+		{{ range $key, $value := . }}
+		<li><strong>{{ $key }}</strong>: {{ $value }}</li>
+		{{end}}
+		<!-- {{ if . }} T0 {{end}} -->
+		<a href=/oauth>oauth</a><br>
+		<a href=/saml>saml</a><br>
+	</body>
+</html>
