@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"nwneisen/go-proxy-yourself/pkg/server/responses"
 	"time"
 )
 
@@ -16,15 +17,15 @@ func NewGoogleProvider() *GoogleProvider {
 }
 
 // Begin starts the OAuth authentication process
-func (p *GoogleProvider) Begin(w http.ResponseWriter) {
+func (p *GoogleProvider) Begin() *responses.Response {
 	// h.logger.Info("Checking auth with Google OAuth")
 	page, err := ioutil.ReadFile("web/google-redirect.html")
 	if err != nil {
 		// h.logger.Error(err.Error())
-		return
+		return responses.InternalServerError(err.Error())
 	}
 
-	io.WriteString(w, string(page))
+	return responses.TempRedirect(string(page))
 }
 
 // Callback handles the OAuth response from Google's server

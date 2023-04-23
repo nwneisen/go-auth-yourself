@@ -7,24 +7,31 @@ import (
 	"net/http"
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
+	"nwneisen/go-proxy-yourself/pkg/server/handlers"
+	"nwneisen/go-proxy-yourself/pkg/server/responses"
 	"time"
 )
 
-type Saml struct {
-	config *config.Config
-	logger *logger.Logger
+type SAML struct {
+	*handlers.BaseHandler
+}
+
+func NewSaml(config *config.Config, logger *logger.Logger) handlers.Handler {
+	return SAML{
+		BaseHandler: handlers.NewBaseHandler(config, logger),
+	}
 }
 
 // Index
-func (h *Saml) Index(w http.ResponseWriter, req *http.Request) {
-	host := req.Host
+func (s SAML) Get() *responses.Response {
+	host := s.Request().Host
 
-	if _, ok := h.config.Routes[host]; ok {
+	if _, ok := s.Config().Routes[host]; ok {
 		// message := fmt.Sprintf("Routing from %s to %s", host, route.EgressHostname)
 		// log.Println(w, message)
 
 		// h.idpAuthFlow(w, req, route)
-		h.logger.Info("Saml route called")
+		s.Log().Info("Saml route called")
 
 		// if req.Referer() != "https://test.nneisen.local/" {
 		// 	h.googleOAuthFlow(w, req, route)
@@ -32,13 +39,10 @@ func (h *Saml) Index(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// h.dumpReq(w, req)
+	return responses.OK("Saml route called")
 }
 
-func NewSaml(config *config.Config, logger *logger.Logger) *Saml {
-	return &Saml{config, logger}
-}
-
-func (h *Saml) idpAuthFlow(w http.ResponseWriter, req *http.Request, route config.Route) {
+func (s SAML) idpAuthFlow(w http.ResponseWriter, req *http.Request, route config.Route) {
 	if value, ok := req.Header["Referer"]; ok {
 		// Request came from IDP
 		referer := value[0]
@@ -48,34 +52,34 @@ func (h *Saml) idpAuthFlow(w http.ResponseWriter, req *http.Request, route confi
 
 		// h.addCookie(&w)
 
-		h.logger.Info("Adding cookie")
+		s.Log().Info("Adding cookie")
 		cookie := &http.Cookie{
 			Name:   "token",
 			Value:  "some_token",
 			MaxAge: 300,
 		}
 		http.SetCookie(w, cookie)
-		h.finalRedirect(w, req, &route)
+		s.finalRedirect(w, req, &route)
 	} else {
 		// Request did not come from IDP
-		h.idpAuth(w)
+		s.idpAuth(w)
 	}
 }
 
 // idpAuth performs a browser redirect to the identity provider
-func (h *Saml) idpAuth(w http.ResponseWriter) {
-	h.logger.Info("Checking auth with IDP")
+func (s SAML) idpAuth(w http.ResponseWriter) {
+	s.Log().Info("Checking auth with IDP")
 	page, err := ioutil.ReadFile("web/okta-redirect.html")
 	if err != nil {
-		h.logger.Error(err.Error())
+		s.Log().Error(err.Error())
 	}
 
 	io.WriteString(w, string(page))
 }
 
 // finalRedirect sends the user to the service provider
-func (h *Saml) finalRedirect(w http.ResponseWriter, req *http.Request, route *config.Route) {
-	h.logger.Info("Sending final redirect")
+func (s SAML) finalRedirect(w http.ResponseWriter, req *http.Request, route *config.Route) {
+	s.Log().Info("Sending final redirect")
 
 	// body, err := ioutil.ReadAll(req.Body)
 	// if err != nil {

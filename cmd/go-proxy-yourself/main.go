@@ -1,30 +1,25 @@
 package main
 
 import (
+	"nwneisen/go-proxy-yourself/internal/handlers/callbacks"
 	"nwneisen/go-proxy-yourself/internal/handlers/index"
+	"nwneisen/go-proxy-yourself/internal/handlers/oauth"
+	"nwneisen/go-proxy-yourself/internal/handlers/saml"
 	"nwneisen/go-proxy-yourself/pkg/server"
 )
 
+// main point of entry
 func main() {
-	// // Add http redirect handler
-	// handlers := handlers.NewHandlers(config, logger)
-	// oAuth := oauth.NewOAuth(config, logger)
-	// saml := saml.NewSaml(config, logger)
-	// callbacks := callbacks.NewCallbacks(config, logger)
-
-	// // Add https handlers
-	// mux := http.NewServeMux()
-	// mux.HandleFunc("/", handlers.Index)
-	// mux.HandleFunc("/saml", saml.Index)
-	// mux.Handle("/oauth", oAuth)
-	// mux.Handle("/callback", callbacks)
-	// // mux.Handle("/config", config)
-
+	// TODO handle args
 	run()
 }
 
+// run starts the server
 func run() {
 	server := server.NewServer()
 	server.AddHandler("/", index.NewIndex)
+	server.AddHandler("/oauth", oauth.NewOAuth)
+	server.AddHandler("/saml", saml.NewSaml)
+	server.AddHandler("/callback", callbacks.NewCallbacks)
 	server.Start()
 }
