@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"nwneisen/go-proxy-yourself/internal/handlers/index"
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
@@ -33,16 +32,11 @@ func NewServer() *Server {
 	logger.Info("mux created")
 
 	// Create the server
-	serve := &Server{
+	return &Server{
 		config: config,
 		logger: logger,
 		mux:    mux,
 	}
-
-	root := index.NewIndex(serve.config, serve.logger)
-	serve.AddHandler("/", &root)
-
-	return serve
 }
 
 // Start listening for requests
@@ -53,9 +47,10 @@ func (s *Server) Start() {
 }
 
 // Add a handler to the server
-func (s *Server) AddHandler(path string, handler *handlers.Handler) {
-	newHandler := handlers.NewHandlerWrapper(s.config, s.logger, handler)
-	s.mux.Handle(path, newHandler)
+func (s *Server) AddHandler(path string, newHandlerFunc func(config *config.Config, logger *logger.Logger) handlers.Handler) {
+	handler := newHandlerFunc(s.config, s.logger)
+	wrappedHandler := handlers.NewHandlerWrapper(s.config, s.logger, handler)
+	s.mux.Handle(path, wrappedHandler)
 }
 
 // RedirectToHTTPS sends all HTTP requests to HTTPS

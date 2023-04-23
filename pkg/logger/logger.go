@@ -4,6 +4,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// type Log interface {
+// 	Info(format string, args ...interface{})
+// 	Error(format string, args ...interface{})
+// 	Debug(format string, args ...interface{})
+// 	Panic(format string, args ...interface{})
+// 	Warn(format string, args ...interface{})
+// }
+
 // Logger wrapper for logging libraries
 type Logger struct {
 	logger *zap.SugaredLogger
@@ -19,7 +27,7 @@ func NewLogger() *Logger {
 	return &Logger{sugar}
 }
 
-func (l *Logger) Info(format string, args ...interface{}) {
+func (l Logger) Info(format string, args ...interface{}) {
 	if len(args) == 0 {
 		l.logger.Info(format)
 	} else {
@@ -27,7 +35,7 @@ func (l *Logger) Info(format string, args ...interface{}) {
 	}
 }
 
-func (l *Logger) Error(format string, args ...interface{}) {
+func (l Logger) Error(format string, args ...interface{}) {
 	if len(args) == 0 {
 		l.logger.Error(format)
 	} else {
@@ -35,7 +43,7 @@ func (l *Logger) Error(format string, args ...interface{}) {
 	}
 }
 
-func (l *Logger) Debug(format string, args ...interface{}) {
+func (l Logger) Debug(format string, args ...interface{}) {
 	if len(args) == 0 {
 		l.logger.Debug(format)
 	} else {
@@ -43,7 +51,7 @@ func (l *Logger) Debug(format string, args ...interface{}) {
 	}
 }
 
-func (l *Logger) Panic(format string, args ...interface{}) {
+func (l Logger) Panic(format string, args ...interface{}) {
 	if len(args) == 0 {
 		l.logger.Panic(format)
 	} else {
@@ -51,7 +59,7 @@ func (l *Logger) Panic(format string, args ...interface{}) {
 	}
 }
 
-func (l *Logger) Warn(format string, args ...interface{}) {
+func (l Logger) Warn(format string, args ...interface{}) {
 	if len(args) == 0 {
 		l.logger.Warn(format)
 	} else {
