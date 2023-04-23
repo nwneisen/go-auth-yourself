@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DEFUALT_CONFIG_FILE="configs/default.yaml"
+DEV_CONFIG_FILE="configs/dev.yaml"
+
+if [[ -f "${DEV_CONFIG_FILE}" ]];
+then
+  exit 0
+else
+  cp ${DEFUALT_CONFIG_FILE} ${DEV_CONFIG_FILE}
+  echo "Created dev config from ${DEFUALT_CONFIG_FILE} at ${DEV_CONFIG_FILE}"
+fi

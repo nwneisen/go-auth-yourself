@@ -6,26 +6,47 @@ This project is being done for fun and likely has plenty of bugs.
 
 ## Setup
 
-The project will launch a simple web server to protect while developing. The following will run the projects code but either SAML or OAuth will need to be configured to actually protect the applications.
+### Generate Certs
 
-1. Add a section to your `etc/hosts` file similar to the following.
+You will need to have certs for the server to run. Generate the certs using
+`scripts/generate_certs`.
+
+### Prepare Hosts
+
+Add a section to your `etc/hosts` file similar to the following.
+
 ```
 127.0.0.1       simple.app.local
 ```
 
-2. Start the development server
-``` bash
+### Developing
+
+Start the development server in a docker container with hot reload by running
+
+```bash
 make dev
 ```
 
-This will start the development containers. The `go-proxy-yourself` container does hot reloading and will rebuild the code when changes are detected to the projects files.
+This will make the main `go-proxy-yourself` server available at `localhost:8080`
+and `localhost:8443`. Requests to http will be automatically routed to https.
 
-3. Setup one of the following authentication procedures
+Along with the main `go-proxy-yourself` container, a simple `httpd` server will
+be launched as an example app to protect. This server will be available at
+`localhost:8081` directly.
 
-### SAML (not fully working)
+Either a SAML or OAuth provider will need to be configured to actually protect
+the applications. Their are multiple providers available.
+
+When the dev server is starting, will copy
+`configs/default.yml` to `configs/dev.yml` if it doesn't exist.
+
+### Authentication Providers
+
+#### SAML (not fully working)
 
 Create your application in okta.com. Add your username to the allowed users and go to the setup page and copy the idpSsoUrl and idpIssuer into the `config/default.yaml` file. Download the okta cert into the config folder of the project.
 
-### OAuth
+#### OAuth
 
-Create a google development project and copy the googleClientId and googleClientSecret into the `config/default.yaml` file.
+Create a google development project and copy the googleClientId and
+googleClientSecret into the `config/default.yaml` file.

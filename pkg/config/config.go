@@ -1,27 +1,51 @@
 package config
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 
 	"gopkg.in/yaml.v2"
 )
 
+// var globalInstance Config
+
+// func InitGlobalInstance(configType string, configLocation string) error {
+// 	var err error
+// 	globalInstance, err = NewConfig(name, cfg)
+// 	return err
+// }
+
 // Config top level config layout
 type Config struct {
-	HttpPort  string `yaml:"httpPort"`
-	HttpsPort string `yaml:"httpsPort"`
+	HttpPort  string `yaml:"httpPort" json:"httpPort" default:"80"`
+	HttpsPort string `yaml:"httpsPort" json:"httpsPort" default:"443"`
 
-	Routes map[string]Route `yaml:"routes"`
+	Routes map[string]Route `yaml:"routes" json:"routes"`
 }
 
 // Possible redirect routes and their information
 type Route struct {
-	EgressHostname string `yaml:"egressHostname"`
-	Port           string `yaml:"port"`
-	IdpSsoUrl      string `yaml:"idpSsoUrl"`
-	IdpIssuer      string `yaml:"idpIssuer"`
-	IdpCertPath    string `yaml:"idpCertPath"`
+	EgressHostname string `yaml:"egressHostname" json:"egressHostname"`
+	Port           string `yaml:"port" json:"port"`
+
+	SAML  map[string]SAMLProvider  `yaml:"saml" json:"saml"`
+	OAuth map[string]OAuthProvider `yaml:"oAuth" json:"oAuth"`
+}
+
+// SAMLProvider is the information needed to connect to a SAML IDP provider
+type SAMLProvider struct {
+	Name     string `yaml:"name" json:"name"`
+	URL      string `yaml:"url "json:"url"`
+	Issuer   string `yaml:"issuer" json:"issuer"`
+	CertPath string `yaml:"certPath" json:"certPath"`
+}
+
+// OAuthProvider is the information needed to connect to an OAuth provider
+type OAuthProvider struct {
+	Name         string `yaml:"name" json:"name"`
+	ClientId     string `yaml:"ClientId" json:"ClientId"`
+	ClientSecret string `yaml:"ClientSecret" json:"ClientSecret"`
 }
 
 // NewConfig creates a new config structure
@@ -45,4 +69,22 @@ func (c *Config) LoadConfig(filePath string) {
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
+}
+
+func (c *Config) JSON() string {
+	b, err := json.Marshal(c)
+	if err != nil {
+		log.Fatalf("%v\n", err)
+		return ""
+	}
+	return string(b)
+}
+
+func (c *Config) YAML() string {
+	b, err := json.Marshal(c)
+	if err != nil {
+		log.Fatalf("%v\n", err)
+		return ""
+	}
+	return string(b)
 }

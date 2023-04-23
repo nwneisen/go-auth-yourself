@@ -4,12 +4,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//Logger wrapper for logging libraries
+// Logger wrapper for logging libraries
 type Logger struct {
 	logger *zap.SugaredLogger
 }
 
-//NewLogger constructs a new Logger class
+// NewLogger constructs a new Logger class
 func NewLogger() *Logger {
 	// TODO Add a way to switch between dev vs prod in config
 	logger, _ := zap.NewDevelopment()
