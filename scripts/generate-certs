@@ -1,4 +1,13 @@
 #!/bin/bash
 
-openssl genrsa -out server.key 4096
-openssl req -new -x509 -key server.key -out server.cert -days 365 -subj "/C=US/ST=South Dakota/L=Spearfish/O=Dev/OU=Dev/CN=Nick/emailAddress=nwneisen@gmail.com"
+OUTPUT_DIR=bin
+SERVER_KEY=server.key
+SERVER_CERT=server.cert
+
+# Create the output directory
+mkdir -p ${OUTPUT_DIR}
+
+# Generate the key
+openssl genrsa -out ${OUTPUT_DIR}/${SERVER_KEY} 4096
+# Generate the cert
+openssl req -new -x509 -key ${OUTPUT_DIR}/${SERVER_KEY} -out ${OUTPUT_DIR}/${SERVER_CERT} -days 365 -subj "/C=US/ST=South Dakota/L=Spearfish/O=Dev/OU=Dev/CN=Nick/emailAddress=nwneisen@gmail.com"

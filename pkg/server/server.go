@@ -36,7 +36,7 @@ func NewServer() *Server {
 
 // Start listening for requests
 func (s *Server) Start() {
-	logger.Info("listening for requests on port %s and %s", config.HttpPort, config.HttpsPort)
+	logger.Info("listening for requests on port %s and %s", config.HttpPort(), config.HttpsPort())
 	go http.ListenAndServe(":"+config.HttpPort(), http.HandlerFunc(s.RedirectToHTTPS()))
 	http.ListenAndServeTLS(":"+config.HttpsPort(), "server.cert", "server.key", s.mux)
 }

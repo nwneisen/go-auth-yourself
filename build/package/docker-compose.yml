@@ -7,7 +7,7 @@ services:
       - '8080:80'
       - '8443:443'
     volumes:
-      - ./:/app
+      - ../../:/app
   simple-app:
     container_name: simple-app
     hostname: simple-app

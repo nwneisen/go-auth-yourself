@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -21,6 +20,11 @@ func InitConfig(configLocation string) error {
 	globalConfig = &fields.Root{}
 	LoadConfig(configLocation)
 	return nil
+}
+
+// EmptyConfig returns a config with default values
+func EmptyConfig() *fields.Root {
+	return fields.EmptyRoot()
 }
 
 // Return a map of all routes
@@ -65,22 +69,4 @@ func LoadConfig(filePath string) {
 	if err != nil {
 		logger.Fatal("%v\n", err)
 	}
-}
-
-func JSON() string {
-	b, err := json.Marshal(globalConfig)
-	if err != nil {
-		logger.Fatal("%v\n", err)
-		return ""
-	}
-	return string(b)
-}
-
-func YAML() string {
-	b, err := yaml.Marshal(globalConfig)
-	if err != nil {
-		logger.Fatal("%v\n", err)
-		return ""
-	}
-	return string(b)
 }

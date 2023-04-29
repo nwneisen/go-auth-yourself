@@ -1,23 +1,28 @@
 package handlers
 
 import (
-	"net/http"
-
+	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
+	"nwneisen/go-proxy-yourself/pkg/responses"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
 )
 
-// Handlers is a generic handler for none specific routes
+// ConfigHandler for working with the config
 type ConfigHandler struct {
 	*handlers.BaseHandler
 }
 
-// NewConfig creates a new Config handler
-func NewConfig() *ConfigHandler {
-	return &ConfigHandler{}
+// NewConfigHandler creates a new Config handler
+func NewConfigHandler() handlers.Handler {
+	return ConfigHandler{
+		BaseHandler: handlers.NewBaseHandler(),
+	}
 }
 
-// ServeHTTP handles the request by passing it to the real handler
-func (c *ConfigHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Callback handler called")
+// Get returns the index.html page
+func (h ConfigHandler) Get() *responses.Response {
+	logger.Info("Index %s handler called", h.Request().Method)
+
+	emptyConfig := config.EmptyConfig()
+	return responses.JsonOK(emptyConfig.YAML())
 }

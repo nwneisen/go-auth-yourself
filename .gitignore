@@ -1,7 +1,11 @@
 go-proxy-yourself
-
 !cmd/go-proxy-yourself
 
+
+# Directories
+bin
+
+# Specific files
 configs/okta.cert
 configs/dev.yaml
 server.cert

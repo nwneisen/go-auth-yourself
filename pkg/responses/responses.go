@@ -24,6 +24,15 @@ func (r *Response) GetHeaders() map[string]string {
 	return r.headers
 }
 
+// JsonOK returns a 200 response with a JSON content type
+func JsonOK(body string) *Response {
+	return &Response{
+		body:    body,
+		code:    http.StatusOK,
+		headers: map[string]string{"Content-Type": "application/json"},
+	}
+}
+
 // OK returns a 200 response
 func OK(body string) *Response {
 	return &Response{

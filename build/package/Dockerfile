@@ -11,4 +11,4 @@ RUN apk add --no-cache git && \
 WORKDIR /app
 COPY ./ /app
 
-ENTRYPOINT CompileDaemon --build="go build -o go-proxy-yourself ./cmd/go-proxy-yourself/main.go" --directory=/app --recursive=true -log-prefix=false --command=/app/go-proxy-yourself
+ENTRYPOINT CompileDaemon --build="go build -o bin/go-proxy-yourself ./cmd/go-proxy-yourself/main.go" --directory=/app --recursive=true -log-prefix=false --command=/app/bin/go-proxy-yourself

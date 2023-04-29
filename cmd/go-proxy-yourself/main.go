@@ -16,6 +16,7 @@ func run() {
 	server := server.NewServer()
 
 	server.AddHandler("/", handlers.NewIndexHandler)
+	server.AddHandler("/config", handlers.NewConfigHandler)
 	server.AddHandler("/oauth", handlers.NewOAuthHandler)
 	server.AddHandler("/saml", handlers.NewSamlHandler)
 	server.AddHandler("/callback", handlers.NewCallbacksHandler)

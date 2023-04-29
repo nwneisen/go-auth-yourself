@@ -11,7 +11,7 @@ import (
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
 )
 
-// Index handler
+// IndexHandler
 type IndexHandler struct {
 	*handlers.BaseHandler
 }

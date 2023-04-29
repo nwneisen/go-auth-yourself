@@ -1,6 +1,39 @@
 package fields
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"nwneisen/go-proxy-yourself/pkg/logger"
+
+	"gopkg.in/yaml.v2"
+)
+
+// EmptyRoot returns a root with default values
+func EmptyRoot() *Root {
+	return &Root{
+		HttpPort:  "80",
+		HttpsPort: "443",
+		Routes: map[string]*Route{
+			"example.com": &Route{
+				EgressHostname: "example.com",
+				Port:           "80",
+				SAML: map[string]*SAMLProvider{
+					"example.com": &SAMLProvider{
+						URL:      "https://example.com/saml",
+						Issuer:   "https://example.com",
+						CertPath: "/path/to/cert",
+					},
+				},
+				OAuth: map[string]*OAuthProvider{
+					"example.com": &OAuthProvider{
+						ClientId:     "example.com",
+						ClientSecret: "example.com",
+					},
+				},
+			},
+		},
+	}
+}
 
 // Root top level config layout
 type Root struct {
@@ -8,6 +41,24 @@ type Root struct {
 	HttpsPort string `yaml:"httpsPort" json:"httpsPort" default:"443"`
 
 	Routes map[string]*Route `yaml:"routes" json:"routes"`
+}
+
+func (r *Root) JSON() string {
+	b, err := json.Marshal(r)
+	if err != nil {
+		logger.Fatal("%v\n", err)
+		return ""
+	}
+	return string(b)
+}
+
+func (r *Root) YAML() string {
+	b, err := yaml.Marshal(r)
+	if err != nil {
+		logger.Fatal("%v\n", err)
+		return ""
+	}
+	return string(b)
 }
 
 // Possible redirect routes and their information
