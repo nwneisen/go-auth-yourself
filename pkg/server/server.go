@@ -18,11 +18,14 @@ type Server struct {
 
 // Create a new server instance
 func NewServer() *Server {
+	// Setup the logger
+	logger.InitLogging()
+
 	// Read the configs
 	config.InitConfig(config.DEFAULT_DEV_LOG)
 
-	// Setup the logger
-	logger.InitLogging()
+	routes, _ := config.Routes()
+	logger.Debug("%v", routes)
 
 	// Setup the mux
 	mux := http.NewServeMux()
@@ -36,9 +39,10 @@ func NewServer() *Server {
 
 // Start listening for requests
 func (s *Server) Start() {
+
 	logger.Info("listening for requests on port %s and %s", config.HttpPort(), config.HttpsPort())
 	go http.ListenAndServe(":"+config.HttpPort(), http.HandlerFunc(s.RedirectToHTTPS()))
-	http.ListenAndServeTLS(":"+config.HttpsPort(), "server.cert", "server.key", s.mux)
+	http.ListenAndServeTLS(":"+config.HttpsPort(), "bin/server.cert", "bin/server.key", s.mux)
 }
 
 // Add a handler to the server

@@ -26,6 +26,7 @@ func NewIndexHandler() handlers.Handler {
 // Get returns the index.html page
 func (i IndexHandler) Get() *responses.Response {
 	logger.Info("Index %s handler called", i.Request().Method)
+	indexHTML := "web/index.html"
 
 	// page, err := ioutil.ReadFile("web/index.html")
 	// if err != nil {
@@ -34,16 +35,15 @@ func (i IndexHandler) Get() *responses.Response {
 	// 	return responses.InternalServerError(msg)
 	// }
 
-	tmpl, err := template.ParseFiles("web/index.html")
+	tmpl, err := template.ParseFiles(indexHTML)
 	if err != nil {
-		msg := fmt.Sprintf("could not read index html file: %v", err.Error())
-		logger.Debug(msg)
+		msg := fmt.Sprintf("could not read index html file: %v", err)
 		return responses.InternalServerError(msg)
 	}
 
 	routes, err := config.Routes()
 	if err != nil {
-		responses.NotFound(fmt.Sprintf("could not get routes: %v", err.Error()))
+		responses.NotFound(fmt.Sprintf("could not get routes: %v", err))
 	}
 
 	var doc bytes.Buffer

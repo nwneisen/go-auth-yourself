@@ -22,7 +22,7 @@ func InitLogging() error {
 	// Setup the zapper framework
 	zapper, err := zap.NewDevelopment()
 	if err != nil {
-		log.Panicf("Failed to create zapper logger", err)
+		log.Panicf("Failed to create zapper logger: %v", err)
 	}
 	sugar := zapper.Sugar()
 	defer zapper.Sync() // flushes buffer, if any
@@ -47,9 +47,9 @@ func Info(format string, args ...interface{}) {
 
 func Error(format string, args ...interface{}) {
 	if len(args) == 0 {
-		globalLogger.log.Error(format)
+		globalLogger.log.Info(format)
 	} else {
-		globalLogger.log.Errorf(format, args...)
+		globalLogger.log.Infof(format, args...)
 	}
 }
 
@@ -71,9 +71,9 @@ func Panic(format string, args ...interface{}) {
 
 func Warn(format string, args ...interface{}) {
 	if len(args) == 0 {
-		globalLogger.log.Warn(format)
+		globalLogger.log.Info(format)
 	} else {
-		globalLogger.log.Warnf(format, args...)
+		globalLogger.log.Infof(format, args...)
 	}
 }
 

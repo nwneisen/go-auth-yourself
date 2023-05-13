@@ -19,6 +19,9 @@ Add a section to your `etc/hosts` file similar to the following.
 127.0.0.1       simple.app.local
 ```
 
+The name used here will be the host used to determine the SAML settings to use
+from the config. i.e. route key
+
 ### Developing
 
 Start the development server in a docker container with hot reload by running

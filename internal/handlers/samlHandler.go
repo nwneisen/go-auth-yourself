@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"io"
-	"io/ioutil"
-	"net/http"
+	"bytes"
+	"fmt"
+	"html/template"
 
+	"nwneisen/go-proxy-yourself/internal/fields"
+	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
 	"nwneisen/go-proxy-yourself/pkg/responses"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
@@ -20,16 +22,24 @@ func NewSamlHandler() handlers.Handler {
 	}
 }
 
-// Index
+// SAMLHandler handles requests for SAML authentication
 func (s SAMLHandler) Get() *responses.Response {
-	// host := s.Request().Host
+	host := s.Request().Host
+	logger.Debug("starting SAML auth for %s", host)
 
-	// if _, ok := config.Routes[host]; ok {
-	// 	// message := fmt.Sprintf("Routing from %s to %s", host, route.EgressHostname)
-	// 	// logger.Ifno(w, message)
+	route, err := config.Route(host)
+	if err != nil {
+		message := fmt.Sprintf("route not found for %s: %v", host, err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
 
-	// 	// h.idpAuthFlow(w, req, route)
-	// 	logger.Info("Saml route called")
+	page, err := getRedirectHTML(route)
+	if err != nil {
+		message := fmt.Sprintf("could not get redirect page: %v", err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
 
 	// 	// if req.Referer() != "https://test.nneisen.local/" {
 	// 	// 	h.googleOAuthFlow(w, req, route)
@@ -37,7 +47,9 @@ func (s SAMLHandler) Get() *responses.Response {
 	// }
 
 	// h.dumpReq(w, req)
-	return responses.OK("Saml route called")
+
+	logger.Info(fmt.Sprintf("routing from %s to %s", host, route.EgressHostname))
+	return responses.OK(page)
 }
 
 // func (s SAMLHandler) idpAuthFlow(w http.ResponseWriter, req *http.Request, route config.Route) {
@@ -64,15 +76,19 @@ func (s SAMLHandler) Get() *responses.Response {
 // 	}
 // }
 
-// idpAuth performs a browser redirect to the identity provider
-func (s SAMLHandler) idpAuth(w http.ResponseWriter) {
-	logger.Info("Checking auth with IDP")
-	page, err := ioutil.ReadFile("web/okta-redirect.html")
+// getRedirectHTML returns the HTML page that will redirect the user to the service provider
+func getRedirectHTML(route *fields.Route) (string, error) {
+	htmlPath := "web/client-redirects/okta.html"
+
+	tmpl, err := template.ParseFiles(htmlPath)
 	if err != nil {
-		logger.Error(err.Error())
+		return "", fmt.Errorf("could not parse %s: %w", htmlPath, err)
 	}
 
-	io.WriteString(w, string(page))
+	var doc bytes.Buffer
+	tmpl.Execute(&doc, route)
+
+	return doc.String(), nil
 }
 
 // finalRedirect sends the user to the service provider
