@@ -28,6 +28,11 @@ func (i IndexHandler) Get() *responses.Response {
 	logger.Info("Index %s handler called", i.Request().Method)
 	indexHTML := "web/index.html"
 
+	response := CheckForSAML(i.Request())
+	if response.GetCode() == 200 {
+		return response
+	}
+
 	// page, err := ioutil.ReadFile("web/index.html")
 	// if err != nil {
 	// 	msg := fmt.Sprintf("could not read index html file: %v", err.Error())
@@ -85,3 +90,15 @@ func (i IndexHandler) Get() *responses.Response {
 
 // 	// h.dumpReq(w, req)
 // }
+
+// Post is the default POST method for all handlers
+func (h IndexHandler) Post() *responses.Response {
+
+	req := h.Request()
+	referers, ok := req.Header["Referer"]
+	if !ok {
+		return responses.BadRequest("Referer header not found")
+	}
+
+	return responses.OK(fmt.Sprintf("referer found: %s", referers[0]))
+}

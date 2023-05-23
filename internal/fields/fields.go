@@ -19,14 +19,8 @@ func EmptyRoot() *Root {
 			"simple.app": {
 				EgressHostname: "localhost",
 				Port:           "8081",
-				SAML: map[string]*SAMLProvider{
-					"test": {
-						URL: "https://localhost:8443/saml",
-					},
-				},
-				OAuth: map[string]*OAuthProvider{
-					"google": {},
-				},
+				SAML:           &SAMLProvider{},
+				OAuth:          &OAuthProvider{},
 			},
 		},
 	}
@@ -113,8 +107,8 @@ type Route struct {
 	EgressHostname string `yaml:"egressHostname" json:"egressHostname" default:"localhost"`
 	Port           string `yaml:"port" json:"port" default:"8443"`
 
-	SAML  map[string]*SAMLProvider  `yaml:"saml,omitempty" json:"saml,omitempty"`
-	OAuth map[string]*OAuthProvider `yaml:"oAuth,omitempty" json:"oAuth,omitempty"`
+	SAML  *SAMLProvider  `yaml:"saml,omitempty" json:"saml,omitempty"`
+	OAuth *OAuthProvider `yaml:"oAuth,omitempty" json:"oAuth,omitempty"`
 }
 
 // String returns a string representation of the Route

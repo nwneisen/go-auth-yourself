@@ -19,7 +19,14 @@ func NewCallbacksHandler() handlers.Handler {
 }
 
 // ServeHTTP handles the request by passing it to the real handler
-func (c CallbacksHandler) Get() *responses.Response {
+func (h CallbacksHandler) Get() *responses.Response {
 	logger.Info("Callback handler called")
 	return responses.OK("Callback handler called")
+}
+
+// Post is the default POST method for all handlers
+func (h CallbacksHandler) Post() *responses.Response {
+	msg := "POST callback received"
+	logger.Info(msg)
+	return responses.BadRequest(msg)
 }

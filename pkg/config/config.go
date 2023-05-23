@@ -7,8 +7,6 @@ import (
 
 	"nwneisen/go-proxy-yourself/internal/fields"
 	"nwneisen/go-proxy-yourself/pkg/logger"
-
-	"gopkg.in/yaml.v2"
 )
 
 var globalConfig *fields.Root
@@ -82,7 +80,6 @@ func SaveConfig(filePath string) error {
 // LoadConfig loads the configuration from a file
 func LoadConfig(filePath string) error {
 	logger.Debug("loading the config from %s\n", filePath)
-	globalConfig := EmptyConfig()
 
 	// Read the config file
 	yamlBytes, err := ioutil.ReadFile(filePath)
@@ -91,17 +88,10 @@ func LoadConfig(filePath string) error {
 	}
 
 	// Unmarshal the config file
-	// err = globalConfig.UnmarshalYAML(yamlBytes)
-	// if err != nil {
-	// 	return fmt.Errorf("%w", err)
-	// }
-
-	err = yaml.Unmarshal(yamlBytes, globalConfig)
+	err = globalConfig.UnmarshalYAML(yamlBytes)
 	if err != nil {
-		logger.Fatal("%w\n", err)
+		return fmt.Errorf("%w", err)
 	}
-
-	logger.Debug(globalConfig.String())
 
 	return nil
 }

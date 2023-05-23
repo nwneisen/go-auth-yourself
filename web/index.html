@@ -2,21 +2,21 @@
 <html>
 	<body>
 		{{ if . }}
-			{{ range $key, $value := . }}
-				<h1>{{ $key }}</h1>
+			{{ range $name, $value := . }}
+				<h1>{{ $name }}</h1>
 				{{ if $value.SAML }}
 					<h2>SAML</h2>
 					{{ range $key, $value := .SAML }}
-						<li> <strong><a href=http://{{ $value.URL }}>{{ $key }}</a></strong></li>
+						<li> <strong><a href={{ $value.URL }}>{{ $name }}</a></strong></li>
 					{{end}}
 				{{end}}
 
-				{{ if $value.OAuth }}
+				<!-- {{ if $value.OAuth }}
 				<h2>OAuth</h2>
 					{{ range $key, $value := .OAuth }}
 						<li> 	<strong><a href=http://{{ $value.URL }}>{{ $key }}</a></strong></li>
 					{{end}}
-				{{end}}
+				{{end}} -->
 			{{end}}
 		{{end}}
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"net/http"
 
 	"nwneisen/go-proxy-yourself/internal/fields"
 	"nwneisen/go-proxy-yourself/pkg/config"
@@ -34,6 +35,8 @@ func (s SAMLHandler) Get() *responses.Response {
 		return responses.NotFound(message)
 	}
 
+	fmt.Println(route)
+
 	page, err := getRedirectHTML(route)
 	if err != nil {
 		message := fmt.Sprintf("could not get redirect page: %v", err)
@@ -47,6 +50,51 @@ func (s SAMLHandler) Get() *responses.Response {
 	// }
 
 	// h.dumpReq(w, req)
+
+	logger.Info(fmt.Sprintf("routing from %s to %s", host, route.EgressHostname))
+	return responses.OK(page)
+}
+
+// CheckForSAML handles requests for SAML authentication
+func CheckForSAML(request *http.Request) *responses.Response {
+	host := request.Host
+	logger.Debug("starting SAML auth for %s", host)
+
+	route, err := config.Route(host)
+	if err != nil {
+		message := fmt.Sprintf("route not found for %s: %v", host, err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
+
+	page, err := getRedirectHTML(route)
+	if err != nil {
+		message := fmt.Sprintf("could not get redirect page: %v", err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
+
+	logger.Info(fmt.Sprintf("routing from %s to %s", host, route.EgressHostname))
+	return responses.OK(page)
+}
+
+func FinalRedirect(request *http.Request) *responses.Response {
+	host := request.Host
+	logger.Debug("starting SAML auth for %s", host)
+
+	route, err := config.Route(host)
+	if err != nil {
+		message := fmt.Sprintf("route not found for %s: %v", host, err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
+
+	page, err := getRedirectHTML(route)
+	if err != nil {
+		message := fmt.Sprintf("could not get redirect page: %v", err)
+		logger.Error(message)
+		return responses.NotFound(message)
+	}
 
 	logger.Info(fmt.Sprintf("routing from %s to %s", host, route.EgressHostname))
 	return responses.OK(page)
@@ -76,6 +124,13 @@ func (s SAMLHandler) Get() *responses.Response {
 // 	}
 // }
 
+// Post is the default POST method for all handlers
+func (s SAMLHandler) Post() *responses.Response {
+	msg := "POST to SAML received"
+	logger.Info(msg)
+	return responses.BadRequest(msg)
+}
+
 // getRedirectHTML returns the HTML page that will redirect the user to the service provider
 func getRedirectHTML(route *fields.Route) (string, error) {
 	htmlPath := "web/client-redirects/okta.html"
@@ -86,7 +141,7 @@ func getRedirectHTML(route *fields.Route) (string, error) {
 	}
 
 	var doc bytes.Buffer
-	tmpl.Execute(&doc, route)
+	tmpl.Execute(&doc, route.SAML)
 
 	return doc.String(), nil
 }
