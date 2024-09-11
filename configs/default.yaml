@@ -1,0 +1,16 @@
+httpPort: "80"
+httpsPort: "443"
+serverCert: ""
+serverKey: ""
+routes:
+  simple.app:
+    egressHostname: localhost
+    port: "8081"
+    saml:
+      url: ""
+      issuer: ""
+      certPath: ""
+      metadata: ""
+    oAuth:
+      clientId: ""
+      clientSecret: ""
