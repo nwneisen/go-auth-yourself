@@ -1,7 +1,6 @@
-version: "3"
 services:
-  go-proxy-yourself:
-    container_name: go-proxy-yourself
+  go-auth-yourself:
+    container_name: go-auth-yourself
     build: ./
     ports:
       - '80:80'

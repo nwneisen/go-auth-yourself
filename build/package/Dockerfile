@@ -1,4 +1,4 @@
-FROM golang:1.20.3-alpine3.17
+FROM golang:1.24.13-alpine3.23
 
 # Install CompileDaemon
 RUN apk add --no-cache git && \
