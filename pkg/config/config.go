@@ -12,10 +12,6 @@ import (
 
 var globalConfig *fields.Root
 
-const (
-	DEFAULT_DEV_LOG = "configs/dev.yaml"
-)
-
 // InitConfig initializes the configuration using Viper
 func InitConfig(configLocation string) error {
 	// If configLocation is empty, use XDG default path
@@ -36,7 +32,7 @@ func InitConfig(configLocation string) error {
 	// Set up Viper configuration
 	viper.SetConfigFile(configLocation)
 	
-	// Set default values
+	// Set default values using viper
 	viper.SetDefault("http_port", "80")
 	viper.SetDefault("https_port", "443")
 	viper.SetDefault("server_cert", "bin/server.cert")
@@ -71,65 +67,6 @@ func InitConfig(configLocation string) error {
 	globalConfig.ServerKey = viper.GetString("server_key")
 	
 	return nil
-}
-
-// InitConfigWithDefault initializes the configuration using Viper with XDG default
-func InitConfigWithDefault() error {
-	// Try to get the config file path using XDG standard
-	configDir := os.Getenv("XDG_CONFIG_HOME")
-	if configDir == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("could not get user home directory: %w", err)
-		}
-		configDir = filepath.Join(homeDir, ".config")
-	}
-	
-	configFilePath := filepath.Join(configDir, "go-proxy-yourself", "config.yaml")
-	
-	// Set up Viper configuration
-	viper.SetConfigFile(configFilePath)
-	
-	// Set default values
-	viper.SetDefault("http_port", "80")
-	viper.SetDefault("https_port", "443")
-	viper.SetDefault("server_cert", "bin/server.cert")
-	viper.SetDefault("server_key", "bin/server.key")
-	
-	// Set default route structure
-	viper.SetDefault("routes.simple_app.egress_hostname", "localhost")
-	viper.SetDefault("routes.simple_app.port", "8081")
-	
-	// Read the config file
-	err := viper.ReadInConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found, create empty config
-			logger.Warn("config file does not exist, creating empty config\n")
-			// Initialize with defaults
-			globalConfig = fields.EmptyRoot()
-			SaveConfig(configFilePath)
-			return nil
-		} else {
-			return fmt.Errorf("could not read config: %w", err)
-		}
-	}
-
-	// Load config into our fields.Root structure
-	globalConfig = fields.EmptyRoot()
-	
-	// Set the values from Viper
-	globalConfig.HttpPort = viper.GetString("http_port")
-	globalConfig.HttpsPort = viper.GetString("https_port")
-	globalConfig.ServerCert = viper.GetString("server_cert")
-	globalConfig.ServerKey = viper.GetString("server_key")
-	
-	return nil
-}
-
-// EmptyConfig returns a config with default values
-func EmptyConfig() *fields.Root {
-	return fields.EmptyRoot()
 }
 
 // Return a map of all routes
@@ -175,27 +112,7 @@ func SaveConfig(filePath string) error {
 	return nil
 }
 
-// LoadConfig loads the configuration from a file using Viper
-func LoadConfig(filePath string) error {
-	logger.Debug("loading the config from %s\n", filePath)
-
-	// Set up Viper configuration
-	viper.SetConfigFile(filePath)
-	
-	// Read the config file
-	err := viper.ReadInConfig()
-	if err != nil {
-		return fmt.Errorf("could not read config: %w", err)
-	}
-
-	// Load config into our fields.Root structure
-	globalConfig = fields.EmptyRoot()
-	
-	// Set the values from Viper
-	globalConfig.HttpPort = viper.GetString("http_port")
-	globalConfig.HttpsPort = viper.GetString("https_port")
-	globalConfig.ServerCert = viper.GetString("server_cert")
-	globalConfig.ServerKey = viper.GetString("server_key")
-	
-	return nil
+// GetConfig returns the global configuration
+func GetConfig() *fields.Root {
+	return globalConfig
 }
