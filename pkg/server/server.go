@@ -9,6 +9,7 @@ import (
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
 	"nwneisen/go-proxy-yourself/pkg/server/handlers"
+	"nwneisen/go-proxy-yourself/internal/handlers"
 )
 
 // Server struct
@@ -20,11 +21,12 @@ type Server struct {
 func NewServer() *Server {
 	// Setup the logger
 	logger.InitLogging()
-
-	// Read the configs
-	config.InitConfig(config.DEFAULT_DEV_LOG)
-
-	routes, _ := config.Routes()
+	
+	routes, err := config.Routes()
+	if err != nil {
+		logger.Warn("Failed to get routes: %v", err)
+		routes = make(map[string]*fields.Route)
+	}
 	logger.Debug("%v", routes)
 
 	// Setup the mux
@@ -32,9 +34,18 @@ func NewServer() *Server {
 	logger.Info("mux created")
 
 	// Create the server
-	return &Server{
+	server := &Server{
 		mux: mux,
 	}
+	
+	// Add handlers
+	server.AddHandler("/", handlers.NewIndexHandler)
+	server.AddHandler("/config", handlers.NewConfigHandler)
+	server.AddHandler("/oauth", handlers.NewOAuthHandler)
+	server.AddHandler("/saml", handlers.NewSamlHandler)
+	server.AddHandler("/callback", handlers.NewCallbacksHandler)
+	
+	return server
 }
 
 // Start listening for requests

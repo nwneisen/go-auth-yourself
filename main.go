@@ -1,12 +1,9 @@
 package main
 
 import (
-	"os"
-	"github.com/spf13/cobra"
+	"nwneisen/go-proxy-yourself/cmd"
 )
 
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
+	cmd.Execute()
 }
