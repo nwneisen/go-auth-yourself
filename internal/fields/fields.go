@@ -152,3 +152,17 @@ func (oap *OAuthProvider) String() string {
 		oap.ClientSecret,
 	)
 }
+
+// ProviderConfig for creating OAuth/SAML providers
+type ProviderConfig struct {
+	Name         string
+	Type         string
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+	IssuerURL    string
+	Scopes       []string
+	SAMLCert     string
+	SAMLKey      string
+	SAMLIDPMeta  string
+}

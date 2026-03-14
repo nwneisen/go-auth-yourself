@@ -1,57 +1,85 @@
 package oauth
 
 import (
-	"io"
-	"io/ioutil"
-	"net/http"
-	"time"
+	"context"
+	"fmt"
 
-	"nwneisen/go-proxy-yourself/pkg/responses"
+	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/google/uuid"
+	"golang.org/x/oauth2"
+
+	"nwneisen/go-proxy-yourself/internal/provider"
 )
 
-// GoogleProvider for a google specific provider
-type GoogleProvider struct{}
-
-// GoogleProvider constructs a new GoogleProvider structures
-func NewGoogleProvider() *GoogleProvider {
-	return &GoogleProvider{}
+type GoogleProvider struct {
+	config   provider.ProviderConfig
+	provider *oidc.Provider
+	oauthCfg oauth2.Config
 }
 
-// Begin starts the OAuth authentication process
-func (p *GoogleProvider) Begin() *responses.Response {
-	// h.logger.Info("Checking auth with Google OAuth")
-	page, err := ioutil.ReadFile("web/google-redirect.html")
+func NewGoogleProvider(cfg provider.ProviderConfig) (*GoogleProvider, error) {
+	oidcProvider, err := oidc.NewProvider(context.Background(), cfg.IssuerURL)
 	if err != nil {
-		// h.logger.Error(err.Error())
-		return responses.InternalServerError(err.Error())
+		return nil, fmt.Errorf("failed to create OIDC provider: %w", err)
 	}
 
-	return responses.TempRedirect(string(page))
+	oauthConfig := oauth2.Config{
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		RedirectURL:  cfg.RedirectURL,
+		Scopes:       cfg.Scopes,
+		Endpoint:     oidcProvider.Endpoint(),
+	}
+
+	return &GoogleProvider{
+		config:   cfg,
+		provider: oidcProvider,
+		oauthCfg: oauthConfig,
+	}, nil
 }
 
-// Callback handles the OAuth response from Google's server
-func (p *GoogleProvider) Callback(w http.ResponseWriter, authCode string) {
-	// req, err := http.NewRequest(req.Method, url, bytes.NewReader(body))
-	req, err := http.NewRequest("POST", "https://oauth2.googleapis.com/token", nil)
+func (p *GoogleProvider) GetName() string {
+	return p.config.Name
+}
 
-	q := req.URL.Query()
-	q.Add("code", authCode)
-	q.Add("client_id", "516991660211-n90f2psn5buea3n7ppucfi3iml7g1342.apps.googleusercontent.com")
-	q.Add("client_secret", "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")
-	q.Add("redirect_uri", "https://authed.nneisen.com")
-	q.Add("grant_type", "authorization_code")
-	req.URL.RawQuery = q.Encode()
+func (p *GoogleProvider) GetType() provider.ProviderType {
+	return provider.OAuthGoogle
+}
 
-	req.Header = make(http.Header)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := http.Client{Timeout: time.Duration(60) * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadGateway)
-		return
+func (p *GoogleProvider) AuthenticateURL(ctx context.Context, state string) (string, error) {
+	if state == "" {
+		state = uuid.New().String()
 	}
-	defer resp.Body.Close()
-	io.Copy(w, resp.Body)
+	return p.oauthCfg.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
+}
 
+func (p *GoogleProvider) Callback(ctx context.Context, code string, state string) (*provider.UserInfo, error) {
+	token, err := p.oauthCfg.Exchange(ctx, code)
+	if err != nil {
+		return nil, fmt.Errorf("failed to exchange token: %w", err)
+	}
+
+	verifier := p.provider.Verifier(&oidc.Config{ClientID: p.config.ClientID})
+	idToken, err := verifier.Verify(ctx, token.Extra("id_token").(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify id token: %w", err)
+	}
+
+	var claims struct {
+		Email         string `json:"email"`
+		EmailVerified bool   `json:"email_verified"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+	}
+
+	if err := idToken.Claims(&claims); err != nil {
+		return nil, fmt.Errorf("failed to parse claims: %w", err)
+	}
+
+	return &provider.UserInfo{
+		ID:       claims.Email,
+		Email:    claims.Email,
+		Name:     claims.Name,
+		Provider: "google",
+	}, nil
 }

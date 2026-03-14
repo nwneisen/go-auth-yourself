@@ -5,11 +5,14 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
+	"nwneisen/go-proxy-yourself/internal/handlers"
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/logger"
-	"nwneisen/go-proxy-yourself/pkg/server/handlers"
-	"nwneisen/go-proxy-yourself/internal/handlers"
+	"nwneisen/go-proxy-yourself/pkg/metrics"
+	serverHandlers "nwneisen/go-proxy-yourself/pkg/server/handlers"
+	"nwneisen/go-proxy-yourself/pkg/tracing"
 )
 
 // Server struct
@@ -21,13 +24,30 @@ type Server struct {
 func NewServer() *Server {
 	// Setup the logger
 	logger.InitLogging()
-	
-	routes, err := config.Routes()
-	if err != nil {
-		logger.Warn("Failed to get routes: %v", err)
-		routes = make(map[string]*fields.Route)
+
+	serviceName := os.Getenv("SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "go-auth-yourself"
 	}
-	logger.Debug("%v", routes)
+
+	jaegerURL := tracing.GetJaegerURL()
+	if tracing.IsEnabled() {
+		_, err := tracing.InitTracer(serviceName, jaegerURL)
+		if err != nil {
+			logger.Warn("Failed to initialize tracing: %v", err)
+		}
+		defer tracing.Shutdown()
+	}
+
+	metricsPort := os.Getenv("METRICS_PORT")
+	if metricsPort == "" {
+		metricsPort = "9090"
+	}
+	go func() {
+		if err := metrics.SetupMetricsServer(metricsPort); err != nil {
+			logger.Warn("Failed to start metrics server: %v", err)
+		}
+	}()
 
 	// Setup the mux
 	mux := http.NewServeMux()
@@ -37,14 +57,14 @@ func NewServer() *Server {
 	server := &Server{
 		mux: mux,
 	}
-	
+
 	// Add handlers
 	server.AddHandler("/", handlers.NewIndexHandler)
 	server.AddHandler("/config", handlers.NewConfigHandler)
-	server.AddHandler("/oauth", handlers.NewOAuthHandler)
+	server.AddHandler("/oauth", handlers.NewOAuth)
 	server.AddHandler("/saml", handlers.NewSamlHandler)
 	server.AddHandler("/callback", handlers.NewCallbacksHandler)
-	
+
 	return server
 }
 
@@ -59,13 +79,14 @@ func (s *Server) Start() {
 // Add a handler to the server
 func (s *Server) AddHandler(path string, newHandlerFunc func() handlers.Handler) {
 	handler := newHandlerFunc()
-	wrappedHandler := handlers.NewHandlerWrapper(handler)
+	wrappedHandler := serverHandlers.NewHandlerWrapper(handler)
 	s.mux.Handle(path, wrappedHandler)
 }
 
 // RedirectToHTTPS sends all HTTP requests to HTTPS
 func (s *Server) RedirectToHTTPS() func(w http.ResponseWriter, req *http.Request) {
-	return func(w http.ResponseWriter, req *http.Request) {
+	middleware := tracing.TracingMiddleware("go-auth-yourself")
+	wrappedHandler := middleware(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		host, _, err := net.SplitHostPort(req.Host)
 		if err != nil {
 			log.Println(err)
@@ -78,8 +99,10 @@ func (s *Server) RedirectToHTTPS() func(w http.ResponseWriter, req *http.Request
 		}
 		logger.Info("redirect to: %s", target)
 		http.Redirect(w, req, target,
-			// see comments below and consider the codes 308, 302, or 301
 			http.StatusTemporaryRedirect)
+	}))
+	return func(w http.ResponseWriter, req *http.Request) {
+		wrappedHandler.ServeHTTP(w, req)
 	}
 }
 

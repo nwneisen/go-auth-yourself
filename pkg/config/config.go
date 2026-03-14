@@ -25,23 +25,23 @@ func InitConfig(configLocation string) error {
 			}
 			configDir = filepath.Join(homeDir, ".config")
 		}
-		
+
 		configLocation = filepath.Join(configDir, "go-proxy-yourself", "config.yaml")
 	}
-	
+
 	// Set up Viper configuration
 	viper.SetConfigFile(configLocation)
-	
+
 	// Set default values using viper
 	viper.SetDefault("http_port", "80")
 	viper.SetDefault("https_port", "443")
 	viper.SetDefault("server_cert", "bin/server.cert")
 	viper.SetDefault("server_key", "bin/server.key")
-	
+
 	// Set default route structure
 	viper.SetDefault("routes.simple_app.egress_hostname", "localhost")
 	viper.SetDefault("routes.simple_app.port", "8081")
-	
+
 	// Read the config file
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -59,13 +59,13 @@ func InitConfig(configLocation string) error {
 
 	// Load config into our fields.Root structure
 	globalConfig = fields.EmptyRoot()
-	
+
 	// Set the values from Viper
 	globalConfig.HttpPort = viper.GetString("http_port")
 	globalConfig.HttpsPort = viper.GetString("https_port")
 	globalConfig.ServerCert = viper.GetString("server_cert")
 	globalConfig.ServerKey = viper.GetString("server_key")
-	
+
 	return nil
 }
 
@@ -102,7 +102,7 @@ func SaveConfig(filePath string) error {
 	viper.Set("https_port", globalConfig.HttpsPort)
 	viper.Set("server_cert", globalConfig.ServerCert)
 	viper.Set("server_key", globalConfig.ServerKey)
-	
+
 	// Save the config file
 	err := viper.WriteConfigAs(filePath)
 	if err != nil {
@@ -115,4 +115,9 @@ func SaveConfig(filePath string) error {
 // GetConfig returns the global configuration
 func GetConfig() *fields.Root {
 	return globalConfig
+}
+
+// EmptyConfig returns an empty configuration for initialization
+func EmptyConfig() *fields.Root {
+	return fields.EmptyRoot()
 }

@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"github.com/spf13/cobra"
 	"nwneisen/go-proxy-yourself/pkg/config"
 	"nwneisen/go-proxy-yourself/pkg/server"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"os"
 )
 
 var (
@@ -40,4 +39,12 @@ including OAuth, SAML, and configuration management.`,
 
 func init() {
 	rootCmd.Flags().StringVar(&configFilePath, "config", "", "Path to the config file")
+}
+
+// Execute executes the root command
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }
